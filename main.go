@@ -17,6 +17,11 @@ type Student struct {
 	Age  int    `json:"age"`
 }
 
+type Response struct {
+	Payload string `json:"payload"`
+	Error   string `json:"error"`
+}
+
 var Db *sql.DB
 
 func init() {
@@ -37,8 +42,8 @@ func init() {
 func main() {
 	router := httprouter.New()
 
-	router.GET("/", fetchAll)
-	router.POST("/", createStudent)
+	router.GET("/student/", fetchAll)
+	router.POST("/student/", createStudent)
 	router.PUT("/student/:id", updateStudent)
 	router.DELETE("/student/:id", removeStudent)
 	fmt.Println("Server listening to port 3000")
@@ -82,23 +87,25 @@ func createStudent(res http.ResponseWriter, req *http.Request, params httprouter
 func removeStudent(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
 	res.Header().Add("Content-Type", "application/json")
 
-	id, err := strconv.Atoi(params[0].Value)
-	handleErr(err)
+	id, err1 := strconv.Atoi(params[0].Value)
+	handleErr(err1)
 
-	rows, err := removeOneFromDb(int64(id))
-	handleErr(err)
+	rows, err2 := removeOneFromDb(int64(id))
+	handleErr(err2)
 	students := []Student{}
 	for rows.Next() {
 		var id int64
 		var name string
 		var age int
-		err := rows.Scan(&id, &name, &age)
-		handleErr(err)
+		err3 := rows.Scan(&id, &name, &age)
+		handleErr(err3)
 		newStudent := Student{id, name, age}
 		students = append(students, newStudent)
 	}
-	err1 := json.NewEncoder(res).Encode(students)
-	handleErr(err1)
+
+	result := Response{"user deleted successfully", ""}
+
+	json.NewEncoder(res).Encode(result)
 
 }
 
